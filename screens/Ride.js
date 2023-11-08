@@ -1,56 +1,47 @@
 import React, { Component } from "react";
-import {
-  View,
-  StyleSheet,
-  TextInput,
-  TouchableOpacity,
-  Text,
-  ImageBackground,
-  Image,
-  Alert
-} from "react-native";
+import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import * as Permissions from "expo-permissions";
 import { BarCodeScanner } from "expo-barcode-scanner";
 
-const bgImage = require("../assets/background2.png");
-const appIcon = require("../assets/appIcon.png");
-
-export default class RideScreen extends Component {
+export default class TransactionScreen extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      bikeId: "",
-      userId: "",
       domState: "normal",
       hasCameraPermissions: null,
-      scanned: false
+      scanned: false,
+      scannedData: ""
     };
   }
 
-  getCameraPermissions = async () => {
-    const { status } = await Permissions.askAsync(Permissions.CAMERA);
+  getCameraPermissions = async domState => {
+
+    //const { status } = await Permissions.askAsync(Permissions.CAMERA);
+    //const { status } = Permissions.askAsync(Permissions.CAMERA);
+    //const { status } = await Permissions.askAsync(Permissions);
+    const { status } = await Permissions.askAsync(CAMERA);
 
     this.setState({
-      /*status === "granted" é verdadeiro se o usuário concedeu permissão
-          status === "granted" é falso se o usuário não concedeu permissão
+       /*status === "granted" é verdadeiro se o usuário concedeu permissão
+         status === "granted" é falso se o usuário não concedeu permissão
         */
       hasCameraPermissions: status === "granted",
-      domState: "scanner",
+      domState: domState,
       scanned: false
     });
   };
 
   handleBarCodeScanned = async ({ type, data }) => {
     this.setState({
-      bikeId: data,
+      scannedData: data,
       domState: "normal",
       scanned: true
     });
   };
 
   render() {
-    const { bikeId, userId, domState, scanned } = this.state;
-    if (domState !== "normal") {
+    const { domState, hasCameraPermissions, scannedData, scanned } = this.state;
+    if (domState === "scanner") {
       return (
         <BarCodeScanner
           onBarCodeScanned={scanned ? undefined : this.handleBarCodeScanned}
@@ -58,40 +49,47 @@ export default class RideScreen extends Component {
         />
       );
     }
+
     return (
       <View style={styles.container}>
-        <View style={styles.upperContainer}>
-          <Image source={appIcon} style={styles.appIcon} />
-          <Text style={styles.title}>Ciclista Eletrônico</Text>
-          <Text style={styles.subtitle}>Um passeio ecologicamente correto</Text>
-        </View>
-        <View style={styles.lowerContainer}>
-          <View style={styles.textinputContainer}>
-            <TextInput
-              style={[styles.textinput, { width: "82%" }]}
-              placeholder={"Id do Usuário"}
-              placeholderTextColor={"#FFFFFF"}
-              value={userId}
-            />
-          </View>
-          <View style={[styles.textinputContainer, { marginTop: 25 }]}>
-            <TextInput
-              style={styles.textinput}
-              placeholder={"Id da Bicicleta"}
-              placeholderTextColor={"#FFFFFF"}
-              value={bikeId}
-            />
-            <TouchableOpacity
-              style={styles.scanbutton}
-              //onPress=() => {this.getCameraPermissions()}
-              //onPress={() => this.getCameraPermissions()}
-              onPress={() => this.getCameraPermissions}
-              //onPress=() => this.getCameraPermissions()
-            >
-              <Text style={styles.scanbuttonText}>Digitalizar</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
+        <Text style={styles.text}>
+          {hasCameraPermissions ? scannedData : "Solicitar Permissão para a Câmera"}
+        </Text>
+
+        {/*
+        <TouchableOpacity
+          style={[styles.button, { marginTop: 25 }]}
+          onPress= this.getCameraPermissions("scanner")}
+        >
+          <Text style={styles.buttonText}>Digitalizar QR Code</Text>
+        </TouchableOpacity>
+        */}
+
+        {
+        <TouchableOpacity
+          style={[styles.button, { marginTop: 25 }]}
+          onPress={() => this.getCameraPermissions("scanner")}
+        >
+          <Text style={styles.buttonText}>Digitalizar QR Code</Text>
+        </TouchableOpacity>
+        }
+
+        {/*
+        <TouchableOpacity
+          style={[styles.button, { marginTop: 25 }]}
+          onPress={() => this.getCameraPermissions()}
+        >
+          <Text style={styles.buttonText}>Digitalizar QR Code</Text>
+        </TouchableOpacity>
+        */}
+
+        {/*
+        <TouchableOpacity
+          style={[styles.button, { marginTop: 25 }]}
+          onPress={() => this.getCameraPermissions("scanner")}
+        >
+        */}
+
       </View>
     );
   }
@@ -100,71 +98,13 @@ export default class RideScreen extends Component {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
     backgroundColor: "#D0E6F0"
   },
-  bgImage: {
-    flex: 1,
-    resizeMode: "cover",
-    justifyContent: "center"
-  },
-  upperContainer: {
-    flex: 0.5,
-    justifyContent: "center",
-    alignItems: "center"
-  },
-  appIcon: {
-    width: 200,
-    height: 200,
-    resizeMode: "contain",
-    marginTop: 80
-  },
-  title: {
-    fontSize: 40,
-    fontFamily: "Rajdhani_600SemiBold",
-    paddingTop: 20,
-    color: "#4C5D70"
-  },
-  subtitle: {
-    fontSize: 20,
-    fontFamily: "Rajdhani_600SemiBold",
-    color: "#4C5D70"
-  },
-  lowerContainer: {
-    flex: 0.5,
-    alignItems: "center"
-  },
-  textinputContainer: {
-    borderWidth: 2,
-    borderRadius: 10,
-    flexDirection: "row",
-    backgroundColor: "#4C5D70",
-    borderColor: "#4C5D70"
-  },
-  textinput: {
-    width: "57%",
-    height: 50,
-    padding: 10,
-    borderColor: "#4C5D70",
-    borderRadius: 10,
-    borderWidth: 3,
-    fontSize: 18,
-    backgroundColor: "#F88379",
-    fontFamily: "Rajdhani_600SemiBold",
-    color: "#FFFFFF"
-  },
-  scanbutton: {
-    width: 100,
-    height: 50,
-    backgroundColor: "#FBE5C0",
-    borderTopRightRadius: 10,
-    borderBottomRightRadius: 10,
-    justifyContent: "center",
-    alignItems: "center"
-  },
-  scanbuttonText: {
-    fontSize: 20,
+  text: {
     color: "#4C5D70",
-    fontFamily: "Rajdhani_600SemiBold"
+    fontSize: 15
   },
   button: {
     width: "43%",
@@ -172,13 +112,11 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     backgroundColor: "#FBE5C0",
-    borderRadius: 20,
-    borderWidth: 2,
-    borderColor: "#4C5D70"
+    borderRadius: 15,
+    borderWidth: 2
   },
   buttonText: {
-    fontSize: 24,
-    color: "#4C5D70",
-    fontFamily: "Rajdhani_600SemiBold"
+    fontSize: 15,
+    color: "#4C5D70"
   }
 });
